@@ -18,6 +18,9 @@
 #define SA_NUM_POWER_LEVELS 8 // Max 8 for INAV.
 #define RESERVE_BYTE 0x01
 
+#define DEBUG 0
+#define sa_debug if (DEBUG) debug_r
+
 // SmartAudio command and response codes
 enum
 {
@@ -115,13 +118,13 @@ uint8_t smartadioCalcCrc(const uint8_t *data, uint8_t len)
     return crc;
 }
 
-static Timeout timeout(500);
+static Timeout timeout(PROTOCOL_TIMEOUT);
 
 void smartaudioReset(void)
 {
     state = SA_SYNC;
     in_idx = 0;
-    timeout.set(500);
+    timeout.set(PROTOCOL_TIMEOUT);
 }
 
 void smartaudioSendPacket(void)
@@ -305,7 +308,7 @@ int smartaudioProcessSerial(void)
     if (rd_sz == 0)
         return res;
 
-    debug_r("%02X ", data);
+    sa_debug("%02X ", data);
 
     rxPacket[in_idx] = data;
 

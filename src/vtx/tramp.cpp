@@ -8,7 +8,9 @@
 
 #define TRAMP_HEADER 0x0F // 15
 #define TRAMP_MSG_SIZE 15
-#define TRAMP_PROTOCOL_TIMEOUT 300 // ms
+
+#define DEBUG 0
+#define tr_debug if (DEBUG) debug_r
 
 extern Serial serial_1;
 extern Radio radio;
@@ -53,7 +55,7 @@ void trampReset(void)
 {
     state = TRAMP_SYNC;
     in_idx = 0;
-    timeout.set(1500);
+    timeout.set(PROTOCOL_TIMEOUT);
 }
 
 void trampSendPacket(void)
@@ -162,7 +164,7 @@ int trampProcessSerial(void)
     if (rd_sz == 0)
         return res;
 
-    debug_r("%02X ", data);
+    tr_debug("%02X ", data);
 
     rxPacket[in_idx] = data;
 

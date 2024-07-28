@@ -15,6 +15,9 @@
 
 #define FC_QUERY_PERIOD_MS 200
 
+#define DEBUG 0
+#define msp_debug if (DEBUG) debug_r
+
 enum MspFunction
 {
     MSP_VTX_CONFIG = 88,               // out message         Get vtx settings - betaflight
@@ -111,7 +114,7 @@ void mspReset(void)
     state = MSP_SYNC_DOLLAR;
     mspState = CHECK_FREQ_TABLE;
     in_idx = 0;
-    timeout.set(700);
+    timeout.set(PROTOCOL_TIMEOUT);
 }
 
 static void mspSendPacket(uint8_t len)
@@ -366,6 +369,7 @@ static void set_config(const mspVtxConfigStruct &mspVtxConfig)
         power_to_set = g_config.currPowerdB;
         freq_to_set = (mspVtxConfig.pitModeFreqMSB << 8) + mspVtxConfig.pitModeFreqMSB;
     }
+
     g_config.save();
 
     // Set power before freq changes to prevent PLL settling issues and spamming other frequencies.
@@ -495,7 +499,7 @@ int mspProcessSerial(void)
         return PROTOCOL_LISTENING;
 
     rxPacket[in_idx] = data;
-    debug_r("%02X ", data);
+    msp_debug("%02X ", data);
 
     switch (state)
     {
@@ -618,7 +622,16 @@ int mspUpdate(void)
         sendEepromWrite();
         break;
     case MONITORING:
+    {
+        static uint32_t cnt = 0;
+        if (++cnt > 2000 / FC_QUERY_PERIOD_MS)
+        {
+            mspState = CHECK_FREQ_TABLE;
+            timeout.set(2000);
+            cnt = 0;
+        }
         break;
+    }
     default:
         assert(false);
         break;
