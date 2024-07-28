@@ -128,7 +128,7 @@ void Protocol::poll(void)
     case PROTOCOL_ERROR:
         if (res == PROTOCOL_TIMEOUT || ++frame_err >= 16) // frame err or timeout err over 3 times
         {
-            led_r.blink(1, 50);
+            led_r.blink(1000, 100);  // keep blinking
             frame_err = 0; // avoid overflow
             mode = (vtxMode_e)((mode + 1) % VTX_MODE_MAX);
             Protocol::protocol_switch((vtxMode_e)mode);
@@ -140,6 +140,7 @@ void Protocol::poll(void)
         if (mode != g_config.vtxMode)
         {
             g_config.vtxMode = mode;
+            led_r.blink(1, 1000, 1000);
             g_config.save();
         }
         break;

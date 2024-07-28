@@ -3,7 +3,7 @@
 #define PROTOCOL_LISTENING 0
 #define PROTOCOL_ERROR -1
 #define PROTOCOL_OK 1
-#define PROTOCOL_TIMEOUT 500 // ms
+#define PROTOCOL_TIMEOUT 1000 // ms
 
 namespace Protocol
 {
