@@ -7,7 +7,7 @@
         {
             "name": "Cortex Debug",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/makefile/build/at32f421.elf", // 飞控生成的elf文件路径
+            "executable": "${workspaceFolder}/build/at32f421.elf", // 飞控生成的elf文件路径
             "request": "launch",
             "type": "cortex-debug",
             "runToEntryPoint": "main",

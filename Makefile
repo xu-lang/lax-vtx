@@ -19,21 +19,23 @@ MCU_FLY = AT32F421x8
 #######################################
 # download script
 #######################################
-DOWNLOAD_SCRIP = "../script/jlink-download.sh"
+DOWNLOAD_SCRIP = "script/jlink-download.sh"
 
 #######################################
 # link script
 #######################################
+LDSCRIPT := startup/gcc/linker/$(MCU_FLY)_flash.ld
 
-LDSCRIPT := ../startup/gcc/linker/$(MCU_FLY)_flash.ld
+#######################################
+# debug script
+#######################################
+DEBUG_SCRIP := script/debug.sh
 
 ######################################
 # building variables
 ######################################
 # debug build?
-DEBUG ?= 1
-# optimization
-OPT = -Og
+DEBUG ?= 0
 
 
 #######################################
@@ -45,18 +47,18 @@ BUILD_DIR = build
 ######################################
 # source
 ######################################
-VTX_LAYER_DIR = ../src/vtx
-BSP_LAYER_DIR = ../src/driver/bsp
-CHIP_LAYER_DIR = ../src/driver/chip
-MSP_LAYER_DIR = ../src/driver/msp
-MCU_LAYER_DIR = ../src/driver/msp/at32f421
+VTX_LAYER_DIR  = src/vtx
+BSP_LAYER_DIR  = src/driver/bsp
+CHIP_LAYER_DIR = src/driver/chip
+MSP_LAYER_DIR  = src/driver/msp
+MCU_LAYER_DIR  = src/driver/msp/at32f421
 
 VTX_LAYER_INCLUDE  = $(VTX_LAYER_DIR)  $(BSP_LAYER_DIR)
 BSP_LAYER_INCLUDE  = $(BSP_LAYER_DIR)  $(CHIP_LAYER_DIR) $(MSP_LAYER_DIR)
 CHIP_LAYER_INCLUDE = $(CHIP_LAYER_DIR) $(MSP_LAYER_DIR)
 MSP_LAYER_INCLUDE  = $(MSP_LAYER_DIR)  $(MCU_LAYER_INCLUDE)
-MCU_LAYER_INCLUDE  = $(MCU_LAYER_DIR) ../src/driver/msp/cm4
-COMMON_INCLUDE = ../src/utilities
+MCU_LAYER_INCLUDE  = $(MCU_LAYER_DIR) src/driver/msp/cm4
+COMMON_INCLUDE = src/utilities
 
 SOURCES_DIR = $(VTX_LAYER_DIR) $(BSP_LAYER_DIR) $(CHIP_LAYER_DIR) $(MSP_LAYER_DIR) $(MCU_LAYER_DIR)
 
@@ -84,7 +86,7 @@ OBJECTS = \
 ASM_OBJECTS = $(BUILD_DIR)/$(notdir $(ASM_SOURCES:%.s=%.o))
 
 # ASM sources
-ASM_SOURCES = ../startup/gcc/startup_at32f421.s
+ASM_SOURCES = startup/gcc/startup_at32f421.s
 
 #######################################
 # binaries
@@ -95,12 +97,14 @@ PREFIX = arm-none-eabi-
 ifdef GCC_PATH
 CC = $(GCC_PATH)/$(PREFIX)gcc
 CXX = $(GCC_PATH)/$(PREFIX)g++
+GDB = $(GCC_PATH)/$(PREFIX)gdb
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
 else
 CC = $(PREFIX)gcc
 CXX = $(PREFIX)g++
+GDB = $(PREFIX)gdb
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
@@ -146,8 +150,12 @@ CFLAGS += $(MCU) $(C_DEFS) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
+# optimization
+OPT = -O0
 else
 CFLAGS += -DNDEBUG
+# optimization
+OPT = -O3
 endif
 
 # Generate dependency information
@@ -212,6 +220,9 @@ clean:
 download: $(BUILD_DIR)/$(TARGET).hex
 	@echo start flashing......
 	@bash $(DOWNLOAD_SCRIP) $(MCU_FLY) $(BUILD_DIR)/$(TARGET).hex
+
+debug:
+	@bash $(DEBUG_SCRIP) $(GDB) 
   
 #######################################
 # dependencies
