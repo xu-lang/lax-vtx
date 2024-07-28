@@ -1,5 +1,6 @@
 #include "Config.h"
 #include "main.h"
+#include "string.h"
 
 #define CONF_POLL_INTERVAL 100;
 Config g_config;
@@ -33,9 +34,9 @@ static inline void print_config(const Config& config)
 
 int Config::load(void)
 {
-    g_disk.read(0, (uint8_t *)&g_config, sizeof(g_config));
+    g_disk.read(0, (uint8_t *)this, sizeof(*this));
 
-    if (g_config.version != versionEEPROM)
+    if (this->version != versionEEPROM)
     {
         return loaddefault();
     }
@@ -45,24 +46,27 @@ int Config::load(void)
 
 int Config::loaddefault(void)
 {
-    g_config.version = versionEEPROM;
-    g_config.vtxMode = Protocol::BUTTON;
-    g_config.currFreq = 5800;
-    g_config.channel = 27;      // F4
-    g_config.freqMode = 0;
-    g_config.pitMode = 0;
-    g_config.pitmodeInRange = 0;
-    g_config.pitmodeOutRange = 0;
-    g_config.pitmodeFreq = 5584;
-    g_config.currPowerdB = 14;
-    g_config.unlocked = 1;
+    this->version = versionEEPROM;
+    this->vtxMode = Protocol::BUTTON;
+    this->currFreq = 5800;
+    this->channel = 27;      // F4
+    this->freqMode = 0;
+    this->pitMode = 0;
+    this->pitmodeInRange = 0;
+    this->pitmodeOutRange = 0;
+    this->pitmodeFreq = 5584;
+    this->currPowerdB = 14;
+    this->unlocked = 1;
     return 0;
 }
 
 int Config::save(void)
 {
-    g_disk.write(0, (uint8_t *)&g_config, sizeof(g_config));
-    led_r.blink(4, 80);
+    Config tmp;
+    tmp.load();
+    if (memcmp(&tmp, this, sizeof(tmp)) == 0)
+        return 0;
+    g_disk.write(0, (uint8_t *)this, sizeof(*this));
     print_config(*this);
     return 0;
 }
