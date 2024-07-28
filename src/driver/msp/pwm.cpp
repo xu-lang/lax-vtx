@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "at32f421_conf.h"
 
-#define PWM_PERIOD 10000 // Results in ~12kHz PWM
+#define PWM_PERIOD 2000 // Results in ~60kHz PWM
 
 struct pwms
 {
