@@ -9,7 +9,8 @@ private:
     struct BlinkTask
     {
         int len_state;
-        int interval;
+        int off_time;
+        int on_time;
         int times;
     } m_blink_task;
 
@@ -22,7 +23,7 @@ public:
 
 public:
     void set(int state);
-    void blink(int times, int interval = 100);
+    void blink(int times, int interval = 100, int on_time = 50);
     virtual int open(DEV_ID id);
     virtual void close(void);
     virtual void event_poll(void);

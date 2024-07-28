@@ -49,13 +49,14 @@ void Led::set(int state)
     gpio_out_write(*(gpio_t *)m_gpio_handle, state);
 }
 
-void Led::blink(int times, int interval)
+void Led::blink(int times, int interval, int on_time)
 {
     // setup the task, the real work will be done in event_poll
-    if (m_blink_task.times)
-        return;
-    m_blink_task.interval = interval;
+    set(OFF);
+    m_blink_task.len_state = OFF;
+    m_blink_task.off_time = interval > on_time ? interval - on_time : 0;
     m_blink_task.times = times;
+    m_blink_task.on_time = on_time;
 }
 
 void Led::event_poll(void)
@@ -67,14 +68,14 @@ void Led::event_poll(void)
         {
             set(OFF);
             m_blink_task.len_state = OFF;
-            m_run_time = now + m_blink_task.interval;
+            m_run_time = now + m_blink_task.off_time;
             m_blink_task.times--;
         }
         else
         {
             set(ON);
             m_blink_task.len_state = ON;
-            m_run_time = now + (50 > m_blink_task.interval ? m_blink_task.interval : 50);
+            m_run_time = now + m_blink_task.on_time;
         }
     }
 }
